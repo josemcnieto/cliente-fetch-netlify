@@ -11,6 +11,38 @@
   <main class="contenedor">
     <h1>Libros</h1>
 
+    <form id="form-buscar" class="formulario">
+      <div class="campo">
+        <label for="buscar-q">Texto</label>
+        <input type="search" id="buscar-q" name="q" placeholder="soledad, orwell, 1984">
+      </div>
+
+      <div class="campo">
+        <label for="buscar-autor">Autor</label>
+        <input type="text" id="buscar-autor" name="autor" placeholder="Cervantes">
+      </div>
+
+      <div class="campo">
+        <label for="buscar-editorial">Editorial</label>
+        <input type="text" id="buscar-editorial" name="editorial">
+      </div>
+
+      <div class="campo">
+        <label for="buscar-anio">Año</label>
+        <input type="number" id="buscar-anio" name="año" step="1" placeholder="1605">
+      </div>
+
+      <div class="campo">
+        <label for="buscar-limit">Máx. resultados</label>
+        <input type="number" id="buscar-limit" name="limit" min="1" step="1" placeholder="sin límite">
+      </div>
+
+      <div class="campo campo--acciones">
+        <button type="submit" class="boton">Buscar</button>
+        <button type="button" id="limpiar" class="boton boton--secundario">Limpiar</button>
+      </div>
+    </form>
+
     <p id="estado" class="estado" role="status" aria-live="polite" hidden></p>
 
     <ul id="lista-libros" class="grid"></ul>
