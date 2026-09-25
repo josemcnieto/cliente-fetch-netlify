@@ -1,6 +1,7 @@
 const API = 'https://server-express-render.onrender.com';
 
 const estado = document.getElementById('estado');
+const mensaje = document.getElementById('mensaje');
 const lista = document.getElementById('lista-libros');
 
 const detalle = document.getElementById('detalle');
@@ -22,11 +23,23 @@ const camposFormulario = {
   limit: document.getElementById('buscar-limit')
 };
 
-// Un mismo helper para los dos paneles. Si el mensaje llega vacio, lo oculta.
-function mostrarEstado(elemento, mensaje, esError) {
-  elemento.textContent = mensaje;
+// Un mismo helper para los dos paneles. Si el texto llega vacio, lo oculta.
+// El parametro se llama "texto" y no "mensaje" a proposito: si se llamara
+// igual que la constante de arriba, dentro de esta funcion "mensaje" seria el
+// parametro y no el elemento del DOM, y el bug pasaria desapercibido.
+function mostrarEstado(elemento, texto, esError) {
+  elemento.textContent = texto;
   elemento.classList.toggle('estado--error', Boolean(esError));
-  elemento.hidden = !mensaje;
+  elemento.hidden = !texto;
+}
+
+// Este va aparte de #estado a proposito. #estado lleva un girador en todo lo que
+// no sea error, asi que jamas debe mostrar un texto de exito: "3 libros"
+// dentro de #estado saldria con un spinner girando al lado. Aqui va solo la
+// pista inicial y el numero de resultados, nunca carga ni error.
+function mostrarMensaje(texto) {
+  mensaje.textContent = texto;
+  mensaje.hidden = !texto;
 }
 
 // El fetch NO entrega los datos: entrega una promesa que se resuelve con un objeto
@@ -74,6 +87,10 @@ function cargarLista(url, mensajeCarga) {
 
   mostrarEstado(estado, mensajeCarga, false);
 
+  // Mientras espera la respuesta no tiene sentido dejar el contador de la
+  // busqueda anterior: si no, se veria "3 libros" junto al spinner.
+  mostrarMensaje('');
+
   return fetch(url)
     .then(function (respuesta) {
       console.log('Primer then -> es un Response:', respuesta);
@@ -95,6 +112,7 @@ function cargarLista(url, mensajeCarga) {
       // hubo coincidencias. Hay que distinguirlo del catch.
       if (libros.length === 0) {
         lista.innerHTML = '';
+        mostrarMensaje('');   // el texto de "sin coincidencias" lo pone #estado
         mostrarEstado(estado, 'Ningun libro coincide con esos filtros.', true);
         return;
       }
@@ -103,6 +121,9 @@ function cargarLista(url, mensajeCarga) {
 
       pintarLibros(libros);
       mostrarEstado(estado, '', false);
+
+      // El plural va aparte porque "1 libros encontrados" se lee mal.
+      mostrarMensaje(libros.length + (libros.length === 1 ? ' libro encontrado' : ' libros encontrados'));
     })
     .catch(function (error) {
       if (busqueda !== ultimaBusqueda) return;
@@ -110,6 +131,7 @@ function cargarLista(url, mensajeCarga) {
       console.error('Falló el fetch:', error);
 
       lista.innerHTML = '';
+      mostrarMensaje('');
       mostrarEstado(estado, 'No se pudieron cargar los libros: ' + error.message, true);
     });
 }
@@ -199,7 +221,9 @@ function buscar(evento) {
 
 formulario.addEventListener('submit', buscar);
 
-document.getElementById('limpiar').addEventListener('click', function () {
+// "Ver todos" hace las dos cosas: vaciar los filtros y volver a pedir todo.
+// Un solo boton en lugar de un "Limpiar" y otro "Ver todos" que se pisen.
+document.getElementById('ver-todos').addEventListener('click', function () {
   formulario.reset();
   cargarLista(API + '/libros', 'Cargando libros...');
 });
@@ -212,4 +236,7 @@ document.getElementById('cerrar-detalle').addEventListener('click', function () 
   ultimaPeticion++;
 });
 
-cargarLista(API + '/libros', 'Cargando libros...');
+// Aquí ya no se pide nada. Antes se cargaba la lista al abrir la pagina, y eso
+// hacia que el buscador no se notara: la lista ya estaba ahi, y al buscar solo
+// se reemplaba por otra lista sin ningun "antes" con el que comparar. Arranquando
+// vacio, cada peticion sale de un clic del usuario y se ve que provoca.

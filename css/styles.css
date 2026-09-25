@@ -137,6 +137,20 @@ h1 {
   border-color: var(--borde);
 }
 
+/* El contador de resultados y la pista inicial. Sin caja ni fondo a proposito:
+   #estado ya dibuja una caja, y dos cajas parecidas una debajo de otra
+   parecerian un elemento duplicado. Aqui va texto plano y discreto. */
+.mensaje {
+  margin: 0 0 1.5rem;
+  color: var(--texto-suave);
+  font-size: 0.9rem;
+}
+
+.mensaje strong {
+  color: var(--texto);
+  font-weight: 600;
+}
+
 /* ============================================================
    Estado (cargando / sin resultados / error)
    El :not(.estado--error) es el girador: solo aparece mientras carga.
