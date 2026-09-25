@@ -13,9 +13,20 @@ fetch(API + '/libros')
   .then(function (libros) {
     console.log('Segundo then -> son los datos:', libros);
 
+    // .map() devuelve un ARRAY de strings, uno por libro. Al meterlo en innerHTML
+    // se veria como "uno,dos,tres", por eso el .join('') los pega sin separador.
     lista.innerHTML = libros
       .map(function (libro) {
-        return '<li>' + libro.titulo + ' — ' + libro.autor + '</li>';
+        // Backticks permiten multilinea y ${} para interpolar variables.
+        // Ojo: el campo se llama anioPublicacion con eñe, y en JavaScript
+        // libro.añoPublicacion es un acceso valido a esa propiedad.
+        return `
+          <li class="card">
+            <h2 class="card__titulo">${libro.titulo}</h2>
+            <p class="card__autor">${libro.autor}</p>
+            <p class="card__datos">${libro.editorial} · ${libro.añoPublicacion}</p>
+          </li>
+        `;
       })
       .join('');
   })
