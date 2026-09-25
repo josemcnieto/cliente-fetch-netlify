@@ -15,6 +15,9 @@ const detalleCampos = {
 };
 
 const formulario = document.getElementById('form-buscar');
+// El id del input es "buscar-anio" (sin enie), pero la clave que usa la API es
+// "año" (con enie). Son dos cosas distintas y se mantienen separadas a proposito:
+// al leer hay que escribir camposFormulario['año'], no camposFormulario.anio.
 const camposFormulario = {
   q: document.getElementById('buscar-q'),
   autor: document.getElementById('buscar-autor'),
@@ -144,7 +147,12 @@ let ultimaPeticion = 0;
 function cargarDetalle(id) {
   const peticion = ++ultimaPeticion;
 
-  detalle.hidden = false;
+  // showModal() en vez de quitar el atributo hidden. El panel antes era un
+  // <aside> al final de la pagina, asi que se abria 1300px mas abajo, fuera de
+  // la pantalla, y parecia que el clic no hacia nada. Como modal sale encima de
+  // todo, y de regalo se cierra con la tecla Escape.
+  if (!detalle.open) detalle.showModal();
+
   detalleContenido.hidden = true;
   mostrarEstado(detalleEstado, 'Cargando libro...', false);
 
@@ -186,12 +194,15 @@ function buscar(evento) {
     q: camposFormulario.q.value.trim(),
     autor: camposFormulario.autor.value.trim(),
     editorial: camposFormulario.editorial.value.trim(),
-    'año': camposFormulario.anio.value.trim(),
+    'año': camposFormulario['año'].value.trim(),
     limit: camposFormulario.limit.value.trim()
   };
 
-  // El servidor interpreta limit=0 como "cero resultados" y un negativo como
-  // un fallo suyo (devuelve los libros menos el ultimo), asi que se corrige aqui.
+  // El servidor trata limit=0 como "cero resultados" y un negativo como un fallo
+  // suyo (devuelve los libros menos el ultimo). En la practica el atributo
+  // min="1" del input ya lo frena antes: el navegador no dispara el submit y
+  // enseña su propio aviso. Esta comprobacion es solo una red por si alguien
+  // quita ese atributo mas adelante.
   if (valores.limit !== '') {
     const limite = Number(valores.limit);
 
@@ -229,7 +240,7 @@ document.getElementById('ver-todos').addEventListener('click', function () {
 });
 
 document.getElementById('cerrar-detalle').addEventListener('click', function () {
-  detalle.hidden = true;
+  detalle.close();
 
   // Anular la peticion en vuelo: si el fetch ya salio, su respuesta ya no
   // debe pintarse porque el usuario cerro el panel.
